@@ -60,24 +60,28 @@ int main(int argc, char const *argv[])
         exit(EXIT_FAILURE);
     }
 
-   
     // PRIVILEGE SEPATATION
     struct passwd *pwd = getpwnam("nobody");
-    pid_t pid = fork();
-    int status = 0;
-
-    if (pid == 0)
+    printf("'nobody' user id: %u\n", pwd->pw_uid);
+    pid_t pid;
+    int status;
+    switch (pid = fork())
     {
-        printf("In Child: %d\n",pid);
+    case 0:
+        printf("In Child: %d\n", pid);
         setuid(pwd->pw_uid);
         valread = read(new_socket, buffer, 1024);
         printf("%s\n", buffer);
         send(new_socket, hello, strlen(hello), 0);
         printf("Hello message sent\n");
-    }
-    else{
+        break;
+
+    default:
+        status = 0;
         printf("In Parent: %d\n", pid);
         waitpid(pid, &status, 0);
+        break;
     }
+
     return 0;
 }
